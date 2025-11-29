@@ -3,9 +3,17 @@ from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy.orm import Session
 
 from config import get_settings
-from crud import (create_recipe, delete_recipe, filter_recipes, get_recipe,
-                  get_recipes, get_unique_cuisines, get_unique_meal_types,
-                  search_recipes, update_recipe)
+from crud import (
+    create_recipe,
+    delete_recipe,
+    filter_recipes,
+    get_recipe,
+    get_recipes,
+    get_unique_cuisines,
+    get_unique_meal_types,
+    search_recipes,
+    update_recipe,
+)
 from database import Base, SessionLocal, engine
 from schemas import Recipe, RecipeCreate
 
