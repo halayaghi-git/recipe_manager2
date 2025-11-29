@@ -1,5 +1,3 @@
-import os
-
 import config
 
 
@@ -17,12 +15,17 @@ def test_settings_use_defaults(monkeypatch):
 
     assert settings.database_url == "sqlite:///./recipes.db"
     assert settings.recipes_page_size == 100
-    assert settings.cors_allow_origins == ["http://localhost:3000", "http://localhost:3001"]
+    assert settings.cors_allow_origins == [
+        "http://localhost:3000",
+        "http://localhost:3001",
+    ]
 
 
 def test_settings_respect_environment(monkeypatch):
     monkeypatch.setenv("DATABASE_URL", "sqlite:///tmp/test.db")
-    monkeypatch.setenv("CORS_ALLOW_ORIGINS", "https://example.com, https://api.example.com")
+    monkeypatch.setenv(
+        "CORS_ALLOW_ORIGINS", "https://example.com, https://api.example.com"
+    )
     monkeypatch.setenv("RECIPES_PAGE_SIZE", "5")
     _reset_settings_cache()
 
@@ -30,7 +33,10 @@ def test_settings_respect_environment(monkeypatch):
 
     assert settings.database_url == "sqlite:///tmp/test.db"
     assert settings.recipes_page_size == 5
-    assert settings.cors_allow_origins == ["https://example.com", "https://api.example.com"]
+    assert settings.cors_allow_origins == [
+        "https://example.com",
+        "https://api.example.com",
+    ]
 
     # Clean up cache for other tests
     _reset_settings_cache()

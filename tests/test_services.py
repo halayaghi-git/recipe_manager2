@@ -71,7 +71,9 @@ def test_service_respects_default_page_size(monkeypatch, db_session):
 def test_service_filter_unique_and_update_flow(db_session):
     service = _create_service(db_session)
 
-    breakfast = service.create(_make_recipe_payload("Pancakes", cuisine="American", meal_type="breakfast"))
+    breakfast = service.create(
+        _make_recipe_payload("Pancakes", cuisine="American", meal_type="breakfast")
+    )
     service.create(_make_recipe_payload("Sushi", cuisine="Japanese", meal_type="lunch"))
 
     breakfast_results = service.filter(meal_type="breakfast")
@@ -80,7 +82,9 @@ def test_service_filter_unique_and_update_flow(db_session):
     cuisines = {item[0] for item in service.get_unique_cuisines()}
     assert {"American", "Japanese"}.issubset(cuisines)
 
-    update_payload = _make_recipe_payload("Pancakes Deluxe", cuisine="American", meal_type="brunch")
+    update_payload = _make_recipe_payload(
+        "Pancakes Deluxe", cuisine="American", meal_type="brunch"
+    )
     updated = service.update(breakfast.id, update_payload)
     assert updated.meal_type == "brunch"
 
