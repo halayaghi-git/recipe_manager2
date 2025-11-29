@@ -50,3 +50,35 @@ jobs:
 
       - name: Run Ruff
         run: ruff check .
+
+  security:
+    name: Security Scan
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: "pip"
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt -r requirements-test.txt
+
+      - name: Run Bandit (code security)
+        run: |
+          bandit -r . -x tests -f json -o bandit-report.json || true
+          bandit -r . -x tests
+
+      - name: Run Safety (dependency vulnerabilities)
+        run: safety check --full-report || true
+
+      - name: Upload Bandit report
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: bandit-security-report
+          path: bandit-report.json
