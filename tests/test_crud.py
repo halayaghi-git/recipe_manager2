@@ -1,7 +1,8 @@
 import pytest
 from sqlalchemy.orm import Session
-from schemas import RecipeCreate
+
 import crud
+from schemas import RecipeCreate
 
 
 class TestCRUD:
