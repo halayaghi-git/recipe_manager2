@@ -2,6 +2,7 @@
 # we have recipes.db as our database file
 
 from sqlalchemy import Column, Integer, String
+
 from database import Base
 
 

@@ -1,6 +1,3 @@
-import pytest
-
-
 class TestAPI:
 
     def test_root_endpoint(self, client):
@@ -44,6 +41,7 @@ class TestAPI:
 
     def test_get_recipes_and_pagination(self, client, sample_recipe):
         """Test getting recipes with pagination"""
+
         # Create a recipe
         client.post("/recipes/", json=sample_recipe)
 

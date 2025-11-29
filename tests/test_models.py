@@ -1,5 +1,5 @@
-import pytest
 from sqlalchemy.orm import Session
+
 from models import Recipe
 
 
