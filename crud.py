@@ -1,3 +1,5 @@
+from typing import Optional
+
 from sqlalchemy import or_
 from sqlalchemy.orm import Session
 
@@ -54,7 +56,7 @@ class RecipeRepository:
             .all()
         )
 
-    def filter(self, meal_type: str | None = None, cuisine: str | None = None):
+    def filter(self, meal_type: Optional[str] = None, cuisine: Optional[str] = None):
         query = self._db.query(Recipe)
         if meal_type:
             query = query.filter(Recipe.meal_type == meal_type)
@@ -75,7 +77,7 @@ class RecipeService:
     def get(self, recipe_id: int):
         return self._repository.get(recipe_id)
 
-    def list(self, skip: int = 0, limit: int | None = None):
+    def list(self, skip: int = 0, limit: Optional[int] = None):
         resolved_limit = limit if limit is not None else settings.recipes_page_size
         return self._repository.list(skip=skip, limit=resolved_limit)
 
@@ -97,7 +99,7 @@ class RecipeService:
     def search(self, query: str):
         return self._repository.search(query)
 
-    def filter(self, meal_type: str | None = None, cuisine: str | None = None):
+    def filter(self, meal_type: Optional[str] = None, cuisine: Optional[str] = None):
         return self._repository.filter(meal_type=meal_type, cuisine=cuisine)
 
     def get_unique_meal_types(self):
@@ -115,7 +117,7 @@ def get_recipe(db: Session, recipe_id: int):
     return _service(db).get(recipe_id)
 
 
-def get_recipes(db: Session, skip: int = 0, limit: int | None = None):
+def get_recipes(db: Session, skip: int = 0, limit: Optional[int] = None):
     return _service(db).list(skip=skip, limit=limit)
 
 
@@ -136,7 +138,7 @@ def search_recipes(db: Session, query: str):
 
 
 def filter_recipes(
-    db: Session, meal_type: str | None = None, cuisine: str | None = None
+    db: Session, meal_type: Optional[str] = None, cuisine: Optional[str] = None
 ):
     return _service(db).filter(meal_type=meal_type, cuisine=cuisine)
 

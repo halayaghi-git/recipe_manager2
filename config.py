@@ -1,12 +1,12 @@
 import os
 from dataclasses import dataclass, field
 from functools import lru_cache
-from typing import List
+from typing import List, Optional
 
 _DEFAULT_CORS_ORIGINS = "http://localhost:3000,http://localhost:3001"
 
 
-def _parse_csv_list(raw_value: str | None) -> List[str]:
+def _parse_csv_list(raw_value: Optional[str]) -> List[str]:
     if not raw_value:
         return []
     return [item.strip() for item in raw_value.split(",") if item.strip()]
