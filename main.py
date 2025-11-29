@@ -1,13 +1,19 @@
-from fastapi import FastAPI, Depends, HTTPException
+from fastapi import Depends, FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy.orm import Session
-from database import SessionLocal, engine, Base
-from crud import get_recipe, get_recipes, create_recipe, update_recipe, delete_recipe, search_recipes, filter_recipes, get_unique_meal_types, get_unique_cuisines
+
+from config import get_settings
+from crud import (create_recipe, delete_recipe, filter_recipes, get_recipe,
+                  get_recipes, get_unique_cuisines, get_unique_meal_types,
+                  search_recipes, update_recipe)
+from database import Base, SessionLocal, engine
 from schemas import Recipe, RecipeCreate
-from models import Recipe as RecipeModel
 
 # Create database tables
 Base.metadata.create_all(bind=engine)
+
+settings = get_settings()
+DEFAULT_PAGE_LIMIT = settings.recipes_page_size
 
 app = FastAPI(
     title="Recipe Manager API",
@@ -18,7 +24,7 @@ app = FastAPI(
 # Add CORS middleware
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:3000", "http://localhost:3001"],  # React development server
+    allow_origins=settings.cors_allow_origins,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -42,7 +48,7 @@ def create_recipe_endpoint(recipe: RecipeCreate, db: Session = Depends(get_db)):
     return create_recipe(db, recipe)
 
 @app.get("/recipes/", response_model=list[Recipe])
-def read_recipes(skip: int = 0, limit: int = 100, db: Session = Depends(get_db)):
+def read_recipes(skip: int = 0, limit: int = DEFAULT_PAGE_LIMIT, db: Session = Depends(get_db)):
     """Get all recipes with pagination"""
     return get_recipes(db, skip=skip, limit=limit)
 
