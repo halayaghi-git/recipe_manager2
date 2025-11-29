@@ -5,6 +5,7 @@ from typing import List
 
 _DEFAULT_CORS_ORIGINS = "http://localhost:3000,http://localhost:3001"
 
+
 def _parse_csv_list(raw_value: str | None) -> List[str]:
     if not raw_value:
         return []
@@ -34,7 +35,9 @@ class Settings:
         if self.recipes_page_size < 1:
             object.__setattr__(self, "recipes_page_size", 1)
         if not self.cors_allow_origins:
-            object.__setattr__(self, "cors_allow_origins", _parse_csv_list(_DEFAULT_CORS_ORIGINS))
+            object.__setattr__(
+                self, "cors_allow_origins", _parse_csv_list(_DEFAULT_CORS_ORIGINS)
+            )
 
 
 @lru_cache(maxsize=1)

@@ -41,14 +41,18 @@ class RecipeRepository:
 
     def search(self, query: str):
         like_pattern = f"%{query}%"
-        return self._db.query(Recipe).filter(
-            or_(
-                Recipe.title.ilike(like_pattern),
-                Recipe.cuisine.ilike(like_pattern),
-                Recipe.meal_type.ilike(like_pattern),
-                Recipe.ingredients.ilike(like_pattern),
+        return (
+            self._db.query(Recipe)
+            .filter(
+                or_(
+                    Recipe.title.ilike(like_pattern),
+                    Recipe.cuisine.ilike(like_pattern),
+                    Recipe.meal_type.ilike(like_pattern),
+                    Recipe.ingredients.ilike(like_pattern),
+                )
             )
-        ).all()
+            .all()
+        )
 
     def filter(self, meal_type: str | None = None, cuisine: str | None = None):
         query = self._db.query(Recipe)
@@ -131,7 +135,9 @@ def search_recipes(db: Session, query: str):
     return _service(db).search(query)
 
 
-def filter_recipes(db: Session, meal_type: str | None = None, cuisine: str | None = None):
+def filter_recipes(
+    db: Session, meal_type: str | None = None, cuisine: str | None = None
+):
     return _service(db).filter(meal_type=meal_type, cuisine=cuisine)
 
 

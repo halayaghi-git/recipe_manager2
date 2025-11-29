@@ -4,7 +4,8 @@
 from sqlalchemy import Column, Integer, String
 from database import Base
 
-class Recipe(Base): # this Recipe class represents the recipes table in the db
+
+class Recipe(Base):  # this Recipe class represents the recipes table in the db
     __tablename__ = "recipes"
     id = Column(Integer, primary_key=True, index=True)
     title = Column(String, index=True)

@@ -2,6 +2,7 @@
 from pydantic import BaseModel, ConfigDict
 from typing import Optional
 
+
 class RecipeBase(BaseModel):
     title: str
     ingredients: str
@@ -9,13 +10,16 @@ class RecipeBase(BaseModel):
     cuisine: Optional[str] = None
     meal_type: Optional[str] = None
 
+
 class RecipeCreate(RecipeBase):
     pass
 
+
 class Recipe(RecipeBase):
     id: int
-    
+
     model_config = ConfigDict(from_attributes=True)  # Replace old Config class
+
 
 # # in this file i define the schemas (data validation)
 # from pydantic import BaseModel
