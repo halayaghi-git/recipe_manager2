@@ -89,7 +89,7 @@ jobs:
     runs-on: ubuntu-latest
     needs: [format, lint]
     env:
-      PYTHONPATH: .
+      PYTHONPATH: ${{ github.workspace }}
 
     strategy:
       fail-fast: false
@@ -112,7 +112,7 @@ jobs:
           pip install -r requirements.txt -r requirements-test.txt
 
       - name: Run tests with coverage
-        run: pytest --verbose --tb=short --cov=crud --cov=database --cov=main --cov=models --cov=schemas --cov-report=term-missing --cov-report=xml
+        run: python -m pytest --verbose --tb=short --cov=crud --cov=database --cov=main --cov=models --cov=schemas --cov-report=term-missing --cov-report=xml
 
       - name: Upload coverage report
         if: matrix.python-version == '3.11'
