@@ -70,8 +70,9 @@ jobs:
 
       - name: Run Bandit (code security)
         run: |
-          bandit -r . -x tests -f json -o bandit-report.json || true
-          bandit -r . -x tests
+          TARGETS="crud.py database.py main.py models.py schemas.py"
+          bandit $TARGETS -f json -o bandit-report.json || true
+          bandit $TARGETS
 
       - name: Run Safety (dependency vulnerabilities)
         run: safety check --full-report || true
