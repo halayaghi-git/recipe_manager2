@@ -7,6 +7,7 @@ on:
       - cd-01-docker-build
       - cd-02-registry-push
       - cd-03-staging-deploy
+      - cd-04-production-deploy
   workflow_dispatch:
   workflow_call:
     secrets:
