@@ -17,6 +17,7 @@ A web application for managing recipes, built with FastAPI (backend) and React (
 - Interactive API Docs: Automatic OpenAPI/Swagger documentation for backend endpoints
 - Comprehensive Tests: 97% test coverage with 14 focused backend tests
 - Web Interface: User-friendly React frontend for browsing, searching, filtering, adding, editing, and deleting recipes.
+- Observability: `/health` status endpoint, Prometheus `/metrics`, and a starter Grafana dashboard.
 
 ## Prerequisites
 Before starting, ensure you have the following installed on your system:
@@ -200,6 +201,7 @@ fastapi==0.117.1
 uvicorn[standard]==0.37.0
 SQLAlchemy==2.0.43
 pydantic==2.11.9
+prometheus-fastapi-instrumentator==7.1.0
 ```
 
 **Testing (`requirements-test.txt`):**
@@ -209,6 +211,25 @@ pytest-cov==4.1.0
 httpx==0.24.1
 pytest-asyncio==0.21.1
 ```
+---
+
+## Monitoring & Health Checks
+
+- `GET /health`: lightweight endpoint that reports application and database status. It is safe to expose to load balancers for liveness/readiness checks.
+- `GET /metrics`: Prometheus exposition endpoint powered by `prometheus-fastapi-instrumentator`. It publishes request counts (`http_requests_total`), request/response sizes, latency histograms (`http_request_duration_seconds`), and error status codes.
+- Grafana: import `monitoring/grafana/dashboard.json` (see `monitoring/README.md`) to visualise request rate, latency percentiles, and 5xx error rate. Point your Prometheus data source at the backend's `/metrics` endpoint.
+
+Example Prometheus scrape config:
+
+```yaml
+scrape_configs:
+  - job_name: recipe-manager
+    static_configs:
+      - targets: ['localhost:8000']
+```
+
+With Prometheus scraping in place, the provided Grafana dashboard works out-of-the-box and can be extended with additional metrics as needed.
+
 ---
 
 **Happy cooking!**

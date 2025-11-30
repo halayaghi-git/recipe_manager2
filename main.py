@@ -1,5 +1,10 @@
+from datetime import UTC, datetime
+
 from fastapi import Depends, FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
+from prometheus_fastapi_instrumentator import Instrumentator, metrics
+from sqlalchemy import text
+from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.orm import Session
 
 from config import get_settings
@@ -52,6 +57,26 @@ def get_db():
 def root():
     return {
         "message": "Welcome to Recipe Manager API! Visit /docs for API documentation"
+    }
+
+
+@app.get("/health", tags=["Monitoring"])
+def health_check(db: Session = Depends(get_db)):
+    """Lightweight application and database health indicator."""
+
+    db_status = "ok"
+    try:
+        db.execute(text("SELECT 1"))
+    except SQLAlchemyError:
+        db_status = "error"
+
+    overall_status = "ok" if db_status == "ok" else "degraded"
+    return {
+        "status": overall_status,
+        "checks": {
+            "database": db_status,
+        },
+        "timestamp": datetime.now(UTC).isoformat(),
     }
 
 
@@ -126,3 +151,19 @@ def get_cuisines(db: Session = Depends(get_db)):
     """Get all unique cuisines for filter dropdown"""
     cuisines = get_unique_cuisines(db)
     return [{"value": c[0]} for c in cuisines if c[0]]
+
+
+instrumentator = (
+    Instrumentator()
+    .add(metrics.requests())
+    .add(metrics.latency())
+    .add(metrics.response_size())
+    .add(metrics.request_size())
+)
+
+instrumentator.instrument(app).expose(
+    app,
+    include_in_schema=False,
+    should_gzip=True,
+    tags=["Monitoring"],
+)

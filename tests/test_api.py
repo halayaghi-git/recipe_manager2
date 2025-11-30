@@ -107,3 +107,20 @@ class TestAPI:
         invalid_recipe = {"title": ""}  # Empty title
         response = client.post("/recipes/", json=invalid_recipe)
         assert response.status_code == 422
+
+    def test_health_endpoint(self, client):
+        """Health endpoint should report OK state"""
+        response = client.get("/health")
+        assert response.status_code == 200
+        body = response.json()
+        assert body["status"] == "ok"
+        assert body["checks"]["database"] == "ok"
+
+    def test_metrics_endpoint(self, client):
+        """Metrics endpoint should expose Prometheus formatted data"""
+        # Hit an endpoint to generate a sample metric entry
+        client.get("/")
+
+        metrics_response = client.get("/metrics")
+        assert metrics_response.status_code == 200
+        assert "http_requests_total" in metrics_response.text
