@@ -19,12 +19,6 @@ on:
         required: true
       AZURE_LOCATION:
         required: true
-      AZURE_PROD_WEBAPP_NAME:
-        required: true
-      AZURE_PROD_RESOURCE_GROUP:
-        required: true
-      AZURE_PROD_LOCATION:
-        required: true
 
 env:
   IMAGE_NAME: recipe-manager
@@ -194,9 +188,9 @@ jobs:
     environment:
       name: production
     env:
-      AZURE_RESOURCE_GROUP: ${{ secrets.AZURE_PROD_RESOURCE_GROUP }}
-      AZURE_WEBAPP_NAME: ${{ secrets.AZURE_PROD_WEBAPP_NAME }}
-      AZURE_LOCATION: ${{ secrets.AZURE_PROD_LOCATION }}
+      AZURE_RESOURCE_GROUP: ${{ secrets.AZURE_RESOURCE_GROUP }}
+      AZURE_WEBAPP_NAME: ${{ secrets.AZURE_WEBAPP_NAME }}
+      AZURE_LOCATION: ${{ secrets.AZURE_LOCATION }}
 
     steps:
       - name: Checkout code
