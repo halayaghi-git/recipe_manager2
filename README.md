@@ -15,7 +15,7 @@ A web application for managing recipes, built with FastAPI (backend) and React (
     - Filter by cuisine (Italian, Chinese, Mexican, Indian, etc.)
 - SQLite Database: Stores recipes persistently with SQLAlchemy ORM
 - Interactive API Docs: Automatic OpenAPI/Swagger documentation for backend endpoints
-- Comprehensive Tests: 97% test coverage with 14 focused backend tests
+- Comprehensive Tests: 91% test coverage with 26 focused backend tests
 - Web Interface: User-friendly React frontend for browsing, searching, filtering, adding, editing, and deleting recipes.
 - Observability: `/health` status endpoint, Prometheus `/metrics`, and a starter Grafana dashboard.
 - User Ownership: optional user accounts own recipes so future auth can lock edits to the creator.
@@ -202,16 +202,15 @@ recipe_manager/
 
 ### Testing Strategy
 
-Pytest backs the project with fast, isolated runs using an in-memory SQLite database and the FastAPI TestClient. The suite covers:
+**26 comprehensive tests** achieve **91% code coverage**:
 
-- **API flow** (`tests/test_api.py`): root and CRUD endpoints, search/filter metadata, validation errors, and the `/health` + `/metrics` observability surfaces.
-- **Runtime config** (`tests/test_config.py`): env var parsing, default fallbacks, and any helper utilities that feed settings into the app.
-- **CRUD layer** (`tests/test_crud.py`): repository helpers, pagination, and failure modes around missing rows.
-- **Models** (`tests/test_models.py`): SQLAlchemy mappings and schema defaults.
-- **Service helpers** (`tests/test_services.py`): pure functions used by the React API layer or backend service utilities.
+- **API Tests (12)**: End-to-end API, health, metrics, user/tag endpoints, validation, and metadata.
+- **Config Tests (2)**: Runtime settings and environment overrides.
+- **CRUD Tests (5)**: Database operations, pagination, search/filter, unique data, and owner/tags flow.
+- **Model Tests (2)**: SQLAlchemy model coverage and relationships.
+- **Service Tests (5)**: Repository and service helper logic.
 
-Running `pytest --cov=. --cov-report=term-missing` consistently yields ~97% line coverage.
-
+Running `pytest --cov=. --cov-report=term-missing` consistently yields ~91% line coverage.
 ### Installing Test Dependencies
 
 From the repo root:
