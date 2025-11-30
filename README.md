@@ -274,10 +274,6 @@ pytest-asyncio==0.21.1
 3. When prompted, pick your Prometheus data source (Grafana will bind it to the `DS_PROMETHEUS` variable used in the dashboard).
 4. Optional: mount `monitoring/` into a Grafana container and use provisioning to auto-load the dashboard for local demos.
 
-![Grafana Dashboard](monitoring/grafana/dashboard.png)
-
-> The bundled PNG is a placeholder preview; once Prometheus starts scraping the API you will see real data in Grafana.
-
 ### One-command demo stack (Docker Compose)
 
 Prefer to spin everything up locally? Use the ready-made compose bundle under `monitoring/`:
