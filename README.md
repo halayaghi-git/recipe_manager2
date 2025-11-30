@@ -18,6 +18,8 @@ A web application for managing recipes, built with FastAPI (backend) and React (
 - Comprehensive Tests: 97% test coverage with 14 focused backend tests
 - Web Interface: User-friendly React frontend for browsing, searching, filtering, adding, editing, and deleting recipes.
 - Observability: `/health` status endpoint, Prometheus `/metrics`, and a starter Grafana dashboard.
+- User Ownership: optional user accounts own recipes so future auth can lock edits to the creator.
+- Tagging: many-to-many tags on recipes enable richer filtering/grouping beyond cuisine/meal type.
 
 ## Prerequisites
 Before starting, ensure you have the following installed on your system:
@@ -83,6 +85,8 @@ cd ..
 3. **Visit** http://localhost:3000 and explore the app. Swagger docs live at http://localhost:8000/docs.
 
 > Tip: stop both servers quickly with `pkill -f "uvicorn"` and `pkill -f "npm start"` (or `Ctrl+C` in each terminal).
+
+> Schema change note: SQLite will not auto-migrate when new tables/columns are introduced (e.g., users/tags). If you previously ran the app, delete `recipes.db` before restarting so SQLAlchemy can recreate the database with the latest schema.
 
 ## Running Locally (Details)
 
@@ -159,6 +163,12 @@ The repository contains a multi-stage CD pipeline implemented in GitHub Actions 
 
 If the UI cannot reach the API, ensure both servers are running or that your deployed endpoints are reachable.
 
+### Managing Users & Tags
+
+- **Users**: `POST /users/` creates a user (`{"email": "chef@example.com", "name": "Chef"}`), `GET /users/` lists them. Use the returned `id` as `owner_id` when creating recipes to associate ownership.
+- **Tags**: `POST /tags/` registers a reusable tag, `GET /tags/` lists all tags alphabetically. When creating/updating recipes, pass `"tags": ["quick", "vegan"]` to auto-create (or reuse) the given tags and link them to the recipe.
+- Existing recipe endpoints now return `owner` (if assigned) and `tags` arrays so the frontend can display additional metadata.
+
 ### Project Structure
 ```
 recipe_manager/
@@ -167,9 +177,10 @@ recipe_manager/
 ├── database.py               # SQLAlchemy engine/session helpers
 ├── models.py                 # ORM models
 ├── schemas.py                # Pydantic request/response models
-├── convert_to_md/            # Utility scripts for docs
 ├── monitoring/
 │   ├── README.md             # Prometheus/Grafana setup notes
+│   ├── docker-compose.yml    # One-command monitoring stack
+│   ├── prometheus.yml        # Scrape config used by the stack
 │   └── grafana/dashboard.json# Starter dashboard
 ├── frontend/                 # React SPA
 │   ├── src/components/       # UI building blocks
@@ -185,7 +196,7 @@ recipe_manager/
 ├── requirements.txt          # Runtime + tooling deps
 ├── requirements-test.txt     # Test-only deps
 ├── README.md                 # This guide
-├── codebase.md               # High-level architecture notes
+├── REPORT.md                 # High-level improvement summary
 └── __init__.py
 ```
 
@@ -238,6 +249,7 @@ safety==3.2.4
 typer==0.12.1                     # Helper scripts
 click==8.1.7                      # Typer dependency
 marshmallow==3.21.2               # Legacy schema support
+email-validator==2.2.0            # Needed for Pydantic EmailStr
 ```
 
 **Test-only (`requirements-test.txt`):**

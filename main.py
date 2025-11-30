@@ -10,17 +10,21 @@ from sqlalchemy.orm import Session
 from config import get_settings
 from crud import (
     create_recipe,
+    create_tag,
+    create_user,
     delete_recipe,
     filter_recipes,
     get_recipe,
     get_recipes,
     get_unique_cuisines,
     get_unique_meal_types,
+    list_tags,
+    list_users,
     search_recipes,
     update_recipe,
 )
 from database import Base, SessionLocal, engine
-from schemas import Recipe, RecipeCreate
+from schemas import Recipe, RecipeCreate, Tag, TagCreate, User, UserCreate
 
 # Create database tables
 Base.metadata.create_all(bind=engine)
@@ -151,6 +155,26 @@ def get_cuisines(db: Session = Depends(get_db)):
     """Get all unique cuisines for filter dropdown"""
     cuisines = get_unique_cuisines(db)
     return [{"value": c[0]} for c in cuisines if c[0]]
+
+
+@app.post("/users/", response_model=User, tags=["Users"])
+def create_user_endpoint(user: UserCreate, db: Session = Depends(get_db)):
+    return create_user(db, user)
+
+
+@app.get("/users/", response_model=list[User], tags=["Users"])
+def list_users_endpoint(db: Session = Depends(get_db)):
+    return list_users(db)
+
+
+@app.post("/tags/", response_model=Tag, tags=["Tags"])
+def create_tag_endpoint(tag: TagCreate, db: Session = Depends(get_db)):
+    return create_tag(db, tag)
+
+
+@app.get("/tags/", response_model=list[Tag], tags=["Tags"])
+def list_tags_endpoint(db: Session = Depends(get_db)):
+    return list_tags(db)
 
 
 instrumentator = (

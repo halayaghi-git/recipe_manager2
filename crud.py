@@ -1,11 +1,11 @@
 from typing import Optional
 
 from sqlalchemy import or_
-from sqlalchemy.orm import Session
+from sqlalchemy.orm import Session, selectinload
 
 from config import get_settings
-from models import Recipe
-from schemas import RecipeCreate
+from models import Recipe, Tag, User
+from schemas import RecipeCreate, TagCreate, UserCreate
 
 settings = get_settings()
 
@@ -16,22 +16,64 @@ class RecipeRepository:
     def __init__(self, db: Session) -> None:
         self._db = db
 
+    def _query(self):
+        return self._db.query(Recipe).options(
+            selectinload(Recipe.tags), selectinload(Recipe.owner)
+        )
+
+    def _ensure_tags(self, names: list[str]):
+        cleaned: list[str] = []
+        seen = set()
+        for name in names:
+            normalized = name.strip()
+            if not normalized or normalized in seen:
+                continue
+            cleaned.append(normalized)
+            seen.add(normalized)
+
+        if not cleaned:
+            return []
+
+        existing = self._db.query(Tag).filter(Tag.name.in_(cleaned)).all()
+        tags_by_name = {tag.name: tag for tag in existing}
+        resolved: list[Tag] = []
+
+        for name in cleaned:
+            tag = tags_by_name.get(name)
+            if tag is None:
+                tag = Tag(name=name)
+                self._db.add(tag)
+                self._db.flush()
+                tags_by_name[name] = tag
+            resolved.append(tag)
+        return resolved
+
     def get(self, recipe_id: int):
-        return self._db.get(Recipe, recipe_id)
+        return (
+            self._query()
+            .filter(Recipe.id == recipe_id)
+            .first()
+        )
 
     def list(self, skip: int, limit: int):
-        return self._db.query(Recipe).offset(skip).limit(limit).all()
+        return self._query().offset(skip).limit(limit).all()
 
     def create(self, payload: dict):
+        tags = payload.pop("tags", []) if payload else []
         recipe = Recipe(**payload)
+        if tags:
+            recipe.tags = self._ensure_tags(tags)
         self._db.add(recipe)
         self._db.commit()
         self._db.refresh(recipe)
         return recipe
 
     def update(self, recipe: Recipe, payload: dict):
+        tags = payload.pop("tags", None)
         for field, value in payload.items():
             setattr(recipe, field, value)
+        if tags is not None:
+            recipe.tags = self._ensure_tags(tags)
         self._db.commit()
         self._db.refresh(recipe)
         return recipe
@@ -44,7 +86,7 @@ class RecipeRepository:
     def search(self, query: str):
         like_pattern = f"%{query}%"
         return (
-            self._db.query(Recipe)
+            self._query()
             .filter(
                 or_(
                     Recipe.title.ilike(like_pattern),
@@ -57,7 +99,7 @@ class RecipeRepository:
         )
 
     def filter(self, meal_type: Optional[str] = None, cuisine: Optional[str] = None):
-        query = self._db.query(Recipe)
+        query = self._query()
         if meal_type:
             query = query.filter(Recipe.meal_type == meal_type)
         if cuisine:
@@ -113,6 +155,39 @@ def _service(db: Session) -> RecipeService:
     return RecipeService(RecipeRepository(db))
 
 
+class UserRepository:
+    def __init__(self, db: Session) -> None:
+        self._db = db
+
+    def list(self):
+        return self._db.query(User).all()
+
+    def create(self, payload: dict):
+        user = User(**payload)
+        self._db.add(user)
+        self._db.commit()
+        self._db.refresh(user)
+        return user
+
+    def get(self, user_id: int):
+        return self._db.get(User, user_id)
+
+
+class TagRepository:
+    def __init__(self, db: Session) -> None:
+        self._db = db
+
+    def list(self):
+        return self._db.query(Tag).order_by(Tag.name).all()
+
+    def create(self, payload: dict):
+        tag = Tag(**payload)
+        self._db.add(tag)
+        self._db.commit()
+        self._db.refresh(tag)
+        return tag
+
+
 def get_recipe(db: Session, recipe_id: int):
     return _service(db).get(recipe_id)
 
@@ -149,3 +224,21 @@ def get_unique_meal_types(db: Session):
 
 def get_unique_cuisines(db: Session):
     return _service(db).get_unique_cuisines()
+
+
+def list_users(db: Session):
+    return UserRepository(db).list()
+
+
+def create_user(db: Session, user: UserCreate):
+    repo = UserRepository(db)
+    return repo.create(user.model_dump())
+
+
+def list_tags(db: Session):
+    return TagRepository(db).list()
+
+
+def create_tag(db: Session, tag: TagCreate):
+    repo = TagRepository(db)
+    return repo.create(tag.model_dump())

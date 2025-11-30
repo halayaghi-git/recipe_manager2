@@ -25,7 +25,11 @@ Recipe Manager evolved from a basic CRUD FastAPI + React app into a production-r
    - Introduced `monitoring/docker-compose.yml` and `prometheus.yml` for a one-command demo of FastAPI + Prometheus + Grafana.
    - Included a dashboard preview image and step-by-step guide for capturing real screenshots.
 
-6. **Documentation Refresh**
+6. **Multi-user & Tag Support**
+   - Extended the data model with `users`, `tags`, and a `recipe_tags` join table plus Pydantic schemas.
+   - API clients can now create/list users & tags, assign recipe ownership via `owner_id`, and attach arbitrary tag lists for richer categorisation.
+
+7. **Documentation Refresh**
    - Rebuilt `README.md` with sections for quick start, local running, Docker usage, testing, deployment, monitoring, project structure, dependencies, and Grafana setup—all in one place.
 
 ## Result

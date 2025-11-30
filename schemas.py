@@ -1,7 +1,36 @@
 # schemas.py - Fix Pydantic v2 config
 from typing import Optional
 
-from pydantic import BaseModel, ConfigDict
+from pydantic import BaseModel, ConfigDict, EmailStr, Field
+
+
+class TagBase(BaseModel):
+    name: str
+
+
+class TagCreate(TagBase):
+    pass
+
+
+class Tag(TagBase):
+    id: int
+
+    model_config = ConfigDict(from_attributes=True)
+
+
+class UserBase(BaseModel):
+    email: EmailStr
+    name: Optional[str] = None
+
+
+class UserCreate(UserBase):
+    pass
+
+
+class User(UserBase):
+    id: int
+
+    model_config = ConfigDict(from_attributes=True)
 
 
 class RecipeBase(BaseModel):
@@ -10,16 +39,19 @@ class RecipeBase(BaseModel):
     instructions: str
     cuisine: Optional[str] = None
     meal_type: Optional[str] = None
+    owner_id: Optional[int] = None
 
 
 class RecipeCreate(RecipeBase):
-    pass
+    tags: list[str] = Field(default_factory=list)
 
 
 class Recipe(RecipeBase):
     id: int
+    tags: list[Tag] = Field(default_factory=list)
+    owner: Optional[User] = None
 
-    model_config = ConfigDict(from_attributes=True)  # Replace old Config class
+    model_config = ConfigDict(from_attributes=True)
 
 
 # # in this file i define the schemas (data validation)
