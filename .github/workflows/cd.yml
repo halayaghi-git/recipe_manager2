@@ -225,13 +225,40 @@ jobs:
     environment:
       name: production
     env:
-      PROD_URL: https://${{ secrets.AZURE_WEBAPP_NAME }}.azurewebsites.net
+      AZURE_RESOURCE_GROUP: ${{ secrets.AZURE_RESOURCE_GROUP }}
+      AZURE_WEBAPP_NAME: ${{ secrets.AZURE_WEBAPP_NAME }}
+      AZURE_LOCATION: ${{ secrets.AZURE_LOCATION }}
 
     steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Azure Login
+        uses: azure/login@v2
+        with:
+          creds: ${{ secrets.AZURE_CREDENTIALS }}
+
+      - name: Determine health check URL
+        id: healthcheck
+        run: |
+          HOSTNAME=$(az webapp show \
+            --resource-group "$AZURE_RESOURCE_GROUP" \
+            --name "$AZURE_WEBAPP_NAME" \
+            --query defaultHostName -o tsv)
+
+          if [ -z "$HOSTNAME" ]; then
+            echo "Unable to determine Web App hostname" >&2
+            exit 1
+          fi
+
+          echo "url=https://$HOSTNAME" >> "$GITHUB_OUTPUT"
+
       - name: Wait for warm-up
         run: sleep 30
 
       - name: Verify application responds
+        env:
+          PROD_URL: ${{ steps.healthcheck.outputs.url }}
         run: |
           for i in {1..5}; do
             if curl -fsS "$PROD_URL/" > response.txt; then
