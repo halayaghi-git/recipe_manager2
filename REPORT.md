@@ -29,8 +29,6 @@ Recipe Manager evolved from a basic CRUD FastAPI + React app into a production-r
    - Extended the data model with `users`, `tags`, and a `recipe_tags` join table plus Pydantic schemas.
    - API clients can now create/list users & tags, assign recipe ownership via `owner_id`, and attach arbitrary tag lists for richer categorisation.
 
-7. **Documentation Refresh**
-   - Rebuilt `README.md` with sections for quick start, local running, Docker usage, testing, deployment, monitoring, project structure, dependencies, and Grafana setup—all in one place.
 
 ## Result
 The repository now ships with clear developer onboarding, rigorous automated testing, a full CI/CD pipeline, built-in health/metrics endpoints, and an optional monitoring stack. These improvements make the project easier to run locally, safer to deploy, and ready for real-world operations.
