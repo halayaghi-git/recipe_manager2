@@ -43,8 +43,6 @@ app = FastAPI(
 )
 
 
-
-
 frontend_build_dir = os.path.join(os.path.dirname(__file__), "frontend", "build")
 if os.path.isdir(frontend_build_dir):
     app.mount(
