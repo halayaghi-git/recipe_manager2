@@ -43,8 +43,7 @@ app = FastAPI(
 )
 
 
-# Serve React static files only for non-API routes
-from fastapi.responses import FileResponse
+
 
 frontend_build_dir = os.path.join(os.path.dirname(__file__), "frontend", "build")
 if os.path.isdir(frontend_build_dir):
