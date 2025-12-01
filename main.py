@@ -46,7 +46,11 @@ from fastapi.responses import FileResponse
 
 frontend_build_dir = os.path.join(os.path.dirname(__file__), "frontend", "build")
 if os.path.isdir(frontend_build_dir):
-    app.mount("/static", StaticFiles(directory=os.path.join(frontend_build_dir, "static")), name="static")
+    app.mount(
+        "/static",
+        StaticFiles(directory=os.path.join(frontend_build_dir, "static")),
+        name="static",
+    )
 
     @app.get("/{full_path:path}")
     async def serve_react_app(full_path: str):
@@ -56,6 +60,7 @@ if os.path.isdir(frontend_build_dir):
             return HTTPException(status_code=404)
         index_path = os.path.join(frontend_build_dir, "index.html")
         return FileResponse(index_path)
+
 
 # Add CORS middleware
 app.add_middleware(
