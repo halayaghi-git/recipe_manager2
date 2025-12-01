@@ -40,10 +40,22 @@ app = FastAPI(
     version="1.0.0",
 )
 
-# Serve React static files
+
+# Serve React static files only for non-API routes
+from fastapi.responses import FileResponse
+
 frontend_build_dir = os.path.join(os.path.dirname(__file__), "frontend", "build")
 if os.path.isdir(frontend_build_dir):
-    app.mount("/", StaticFiles(directory=frontend_build_dir, html=True), name="static")
+    app.mount("/static", StaticFiles(directory=os.path.join(frontend_build_dir, "static")), name="static")
+
+    @app.get("/{full_path:path}")
+    async def serve_react_app(full_path: str):
+        # If the path starts with 'api' or matches an API route, return 404 so FastAPI handles it
+        api_prefixes = ["recipes", "users", "tags", "meal-types", "cuisines", "health"]
+        if any(full_path.startswith(prefix) for prefix in api_prefixes):
+            return HTTPException(status_code=404)
+        index_path = os.path.join(frontend_build_dir, "index.html")
+        return FileResponse(index_path)
 
 # Add CORS middleware
 app.add_middleware(
