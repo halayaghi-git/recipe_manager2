@@ -144,8 +144,6 @@ class TestCRUD:
         assert recipe.owner_id == user.id
         assert {tag.name for tag in recipe.tags} == {"comfort", "quick"}
 
-        update_payload = RecipeCreate(
-            **sample_recipe, owner_id=user.id, tags=["quick"]
-        )
+        update_payload = RecipeCreate(**sample_recipe, owner_id=user.id, tags=["quick"])
         updated = crud.update_recipe(db_session, recipe.id, update_payload)
         assert {tag.name for tag in updated.tags} == {"quick"}

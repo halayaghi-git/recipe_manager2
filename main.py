@@ -1,7 +1,9 @@
-from datetime import UTC, datetime
+from datetime import datetime, timezone
+
 
 from fastapi import Depends, FastAPI, HTTPException
 from fastapi.staticfiles import StaticFiles
+from fastapi.responses import FileResponse
 import os
 from fastapi.middleware.cors import CORSMiddleware
 from prometheus_fastapi_instrumentator import Instrumentator, metrics
@@ -40,10 +42,24 @@ app = FastAPI(
     version="1.0.0",
 )
 
-# Serve React static files
+
 frontend_build_dir = os.path.join(os.path.dirname(__file__), "frontend", "build")
 if os.path.isdir(frontend_build_dir):
-    app.mount("/", StaticFiles(directory=frontend_build_dir, html=True), name="static")
+    app.mount(
+        "/static",
+        StaticFiles(directory=os.path.join(frontend_build_dir, "static")),
+        name="static",
+    )
+
+    @app.get("/{full_path:path}")
+    async def serve_react_app(full_path: str):
+        # If the path starts with 'api' or matches an API route, return 404 so FastAPI handles it
+        api_prefixes = ["recipes", "users", "tags", "meal-types", "cuisines", "health"]
+        if any(full_path.startswith(prefix) for prefix in api_prefixes):
+            return HTTPException(status_code=404)
+        index_path = os.path.join(frontend_build_dir, "index.html")
+        return FileResponse(index_path)
+
 
 # Add CORS middleware
 app.add_middleware(
@@ -87,7 +103,7 @@ def health_check(db: Session = Depends(get_db)):
         "checks": {
             "database": db_status,
         },
-        "timestamp": datetime.now(UTC).isoformat(),
+        "timestamp": datetime.now(timezone.utc).isoformat(),
     }
 
 

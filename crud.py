@@ -49,11 +49,7 @@ class RecipeRepository:
         return resolved
 
     def get(self, recipe_id: int):
-        return (
-            self._query()
-            .filter(Recipe.id == recipe_id)
-            .first()
-        )
+        return self._query().filter(Recipe.id == recipe_id).first()
 
     def list(self, skip: int, limit: int):
         return self._query().offset(skip).limit(limit).all()
