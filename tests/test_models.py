@@ -1,6 +1,6 @@
 from sqlalchemy.orm import Session
 
-from models import Recipe
+from models import Recipe, Tag, User
 
 
 class TestModels:
@@ -36,3 +36,24 @@ class TestModels:
         assert minimal_recipe.id is not None
         assert minimal_recipe.cuisine is None
         assert minimal_recipe.meal_type is None
+
+    def test_user_and_tag_relationships(self, db_session: Session):
+        user = User(email="model@example.com", name="Model User")
+        vegan = Tag(name="vegan")
+        quick = Tag(name="quick")
+        db_session.add_all([user, vegan, quick])
+        db_session.commit()
+
+        recipe = Recipe(
+            title="Tagged Recipe",
+            ingredients="test",
+            instructions="test",
+            owner_id=user.id,
+        )
+        recipe.tags.extend([vegan, quick])
+        db_session.add(recipe)
+        db_session.commit()
+        db_session.refresh(recipe)
+
+        assert recipe.owner.id == user.id
+        assert {tag.name for tag in recipe.tags} == {"vegan", "quick"}

@@ -107,3 +107,50 @@ class TestAPI:
         invalid_recipe = {"title": ""}  # Empty title
         response = client.post("/recipes/", json=invalid_recipe)
         assert response.status_code == 422
+
+    def test_health_endpoint(self, client):
+        """Health endpoint should report OK state"""
+        response = client.get("/health")
+        assert response.status_code == 200
+        body = response.json()
+        assert body["status"] == "ok"
+        assert body["checks"]["database"] == "ok"
+
+    def test_metrics_endpoint(self, client):
+        """Metrics endpoint should expose Prometheus formatted data"""
+        # Hit an endpoint to generate a sample metric entry
+        client.get("/")
+
+        metrics_response = client.get("/metrics")
+        assert metrics_response.status_code == 200
+        assert "http_requests_total" in metrics_response.text
+
+    def test_recipe_with_owner_and_tags(self, client, sample_recipe):
+        user_payload = {"email": "chef@example.com", "name": "Chef"}
+        user_response = client.post("/users/", json=user_payload)
+        assert user_response.status_code == 200
+        user_id = user_response.json()["id"]
+
+        recipe_payload = {
+            **sample_recipe,
+            "owner_id": user_id,
+            "tags": ["quick", "easy"],
+        }
+        create_response = client.post("/recipes/", json=recipe_payload)
+        assert create_response.status_code == 200
+        data = create_response.json()
+        assert data["owner"]["email"] == user_payload["email"]
+        assert {tag["name"] for tag in data["tags"]} == {"quick", "easy"}
+
+    def test_user_and_tag_endpoints(self, client):
+        user_payload = {"email": "reader@example.com", "name": "Reader"}
+        create_user_response = client.post("/users/", json=user_payload)
+        assert create_user_response.status_code == 200
+        users = client.get("/users/").json()
+        assert any(user["email"] == user_payload["email"] for user in users)
+
+        tag_payload = {"name": "vegan"}
+        create_tag_response = client.post("/tags/", json=tag_payload)
+        assert create_tag_response.status_code == 200
+        tags = client.get("/tags/").json()
+        assert any(tag["name"] == tag_payload["name"] for tag in tags)

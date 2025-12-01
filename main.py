@@ -1,21 +1,32 @@
+from datetime import UTC, datetime
+
 from fastapi import Depends, FastAPI, HTTPException
+from fastapi.staticfiles import StaticFiles
+import os
 from fastapi.middleware.cors import CORSMiddleware
+from prometheus_fastapi_instrumentator import Instrumentator, metrics
+from sqlalchemy import text
+from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.orm import Session
 
 from config import get_settings
 from crud import (
     create_recipe,
+    create_tag,
+    create_user,
     delete_recipe,
     filter_recipes,
     get_recipe,
     get_recipes,
     get_unique_cuisines,
     get_unique_meal_types,
+    list_tags,
+    list_users,
     search_recipes,
     update_recipe,
 )
 from database import Base, SessionLocal, engine
-from schemas import Recipe, RecipeCreate
+from schemas import Recipe, RecipeCreate, Tag, TagCreate, User, UserCreate
 
 # Create database tables
 Base.metadata.create_all(bind=engine)
@@ -28,6 +39,11 @@ app = FastAPI(
     description="A simple API for managing recipes",
     version="1.0.0",
 )
+
+# Serve React static files
+frontend_build_dir = os.path.join(os.path.dirname(__file__), "frontend", "build")
+if os.path.isdir(frontend_build_dir):
+    app.mount("/", StaticFiles(directory=frontend_build_dir, html=True), name="static")
 
 # Add CORS middleware
 app.add_middleware(
@@ -52,6 +68,26 @@ def get_db():
 def root():
     return {
         "message": "Welcome to Recipe Manager API! Visit /docs for API documentation"
+    }
+
+
+@app.get("/health", tags=["Monitoring"])
+def health_check(db: Session = Depends(get_db)):
+    """Lightweight application and database health indicator."""
+
+    db_status = "ok"
+    try:
+        db.execute(text("SELECT 1"))
+    except SQLAlchemyError:
+        db_status = "error"
+
+    overall_status = "ok" if db_status == "ok" else "degraded"
+    return {
+        "status": overall_status,
+        "checks": {
+            "database": db_status,
+        },
+        "timestamp": datetime.now(UTC).isoformat(),
     }
 
 
@@ -126,3 +162,39 @@ def get_cuisines(db: Session = Depends(get_db)):
     """Get all unique cuisines for filter dropdown"""
     cuisines = get_unique_cuisines(db)
     return [{"value": c[0]} for c in cuisines if c[0]]
+
+
+@app.post("/users/", response_model=User, tags=["Users"])
+def create_user_endpoint(user: UserCreate, db: Session = Depends(get_db)):
+    return create_user(db, user)
+
+
+@app.get("/users/", response_model=list[User], tags=["Users"])
+def list_users_endpoint(db: Session = Depends(get_db)):
+    return list_users(db)
+
+
+@app.post("/tags/", response_model=Tag, tags=["Tags"])
+def create_tag_endpoint(tag: TagCreate, db: Session = Depends(get_db)):
+    return create_tag(db, tag)
+
+
+@app.get("/tags/", response_model=list[Tag], tags=["Tags"])
+def list_tags_endpoint(db: Session = Depends(get_db)):
+    return list_tags(db)
+
+
+instrumentator = (
+    Instrumentator()
+    .add(metrics.requests())
+    .add(metrics.latency())
+    .add(metrics.response_size())
+    .add(metrics.request_size())
+)
+
+instrumentator.instrument(app).expose(
+    app,
+    include_in_schema=False,
+    should_gzip=True,
+    tags=["Monitoring"],
+)

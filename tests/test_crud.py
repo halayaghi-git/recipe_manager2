@@ -2,7 +2,7 @@ import pytest
 from sqlalchemy.orm import Session
 
 import crud
-from schemas import RecipeCreate
+from schemas import RecipeCreate, UserCreate
 
 
 class TestCRUD:
@@ -132,3 +132,20 @@ class TestCRUD:
             assert isinstance(cuisines, list)
         except Exception:
             pytest.skip("Unique functions might not be implemented")
+
+    def test_recipe_owner_and_tags_flow(self, db_session: Session, sample_recipe):
+        user_payload = UserCreate(email="owner@example.com", name="Owner")
+        user = crud.create_user(db_session, user_payload)
+
+        recipe_create = RecipeCreate(
+            **sample_recipe, owner_id=user.id, tags=["comfort", "quick"]
+        )
+        recipe = crud.create_recipe(db_session, recipe_create)
+        assert recipe.owner_id == user.id
+        assert {tag.name for tag in recipe.tags} == {"comfort", "quick"}
+
+        update_payload = RecipeCreate(
+            **sample_recipe, owner_id=user.id, tags=["quick"]
+        )
+        updated = crud.update_recipe(db_session, recipe.id, update_payload)
+        assert {tag.name for tag in updated.tags} == {"quick"}
