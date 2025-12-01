@@ -149,7 +149,7 @@ function App() {
     fetchRecipes();
   };
 
-  const filteredRecipes = recipes;
+  const filteredRecipes = Array.isArray(recipes) ? recipes : [];
 
   return (
     <div className="App">
