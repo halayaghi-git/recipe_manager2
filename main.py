@@ -1,4 +1,4 @@
-from datetime import UTC, datetime
+from datetime import datetime, timezone
 
 
 from fastapi import Depends, FastAPI, HTTPException
@@ -103,7 +103,7 @@ def health_check(db: Session = Depends(get_db)):
         "checks": {
             "database": db_status,
         },
-        "timestamp": datetime.now(UTC).isoformat(),
+        "timestamp": datetime.now(timezone.utc).isoformat(),
     }
 
 

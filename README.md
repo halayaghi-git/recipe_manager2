@@ -15,7 +15,7 @@ A web application for managing recipes, built with FastAPI (backend) and React (
     - Filter by cuisine (Italian, Chinese, Mexican, Indian, etc.)
 - SQLite Database: Stores recipes persistently with SQLAlchemy ORM
 - Interactive API Docs: Automatic OpenAPI/Swagger documentation for backend endpoints
-- Comprehensive Tests: 91% test coverage with 26 focused backend tests
+- Comprehensive Tests: 96% test coverage with 26 focused backend tests
 - Web Interface: User-friendly React frontend for browsing, searching, filtering, adding, editing, and deleting recipes.
 - Observability: `/health` status endpoint, Prometheus `/metrics`, and a starter Grafana dashboard.
 - User Ownership: optional user accounts own recipes so future auth can lock edits to the creator.
@@ -69,19 +69,32 @@ npm install
 cd ..
 ```
 
+
 ## Quick Start / Run Instructions
 
+The application is now deployed and available online!
+
+**To use the app, simply visit:**
+
+👉 https://hyaghi-recipe-manager-aqbbg3buf0fzhzht.westeurope-01.azurewebsites.net/
+
+You do not need to run the backend or frontend locally unless you want to develop or test changes.
+
+---
+
+If you want to run the app locally for development:
+
 1. **Back-end API** (terminal #1):
-  ```bash
-  cd recipe_manager
-  source venv/bin/activate
-  uvicorn main:app --reload --host 0.0.0.0 --port 8000
-  ```
+    ```bash
+    cd recipe_manager
+    source venv/bin/activate
+    uvicorn main:app --reload --host 0.0.0.0 --port 8000
+    ```
 2. **Front-end UI** (terminal #2):
-  ```bash
-  cd recipe_manager/frontend
-  npm start
-  ```
+    ```bash
+    cd recipe_manager/frontend
+    npm start
+    ```
 3. **Visit** http://localhost:3000 and explore the app. Swagger docs live at http://localhost:8000/docs.
 
 > Tip: stop both servers quickly with `pkill -f "uvicorn"` and `pkill -f "npm start"` (or `Ctrl+C` in each terminal).
@@ -202,7 +215,7 @@ recipe_manager/
 
 ### Testing Strategy
 
-**26 comprehensive tests** achieve **91% code coverage**:
+**26 comprehensive tests** achieve **96% code coverage**:
 
 - **API Tests (12)**: End-to-end API, health, metrics, user/tag endpoints, validation, and metadata.
 - **Config Tests (2)**: Runtime settings and environment overrides.
@@ -210,7 +223,7 @@ recipe_manager/
 - **Model Tests (2)**: SQLAlchemy model coverage and relationships.
 - **Service Tests (5)**: Repository and service helper logic.
 
-Running `pytest --cov=. --cov-report=term-missing` consistently yields ~91% line coverage.
+Running `pytest --cov=. --cov-report=term-missing` consistently yields ~96% line coverage.
 ### Installing Test Dependencies
 
 From the repo root:
