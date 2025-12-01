@@ -1,6 +1,8 @@
 from datetime import UTC, datetime
 
 from fastapi import Depends, FastAPI, HTTPException
+from fastapi.staticfiles import StaticFiles
+import os
 from fastapi.middleware.cors import CORSMiddleware
 from prometheus_fastapi_instrumentator import Instrumentator, metrics
 from sqlalchemy import text
@@ -37,6 +39,11 @@ app = FastAPI(
     description="A simple API for managing recipes",
     version="1.0.0",
 )
+
+# Serve React static files
+frontend_build_dir = os.path.join(os.path.dirname(__file__), "frontend", "build")
+if os.path.isdir(frontend_build_dir):
+    app.mount("/", StaticFiles(directory=frontend_build_dir, html=True), name="static")
 
 # Add CORS middleware
 app.add_middleware(
