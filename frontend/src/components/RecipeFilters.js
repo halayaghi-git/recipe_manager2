@@ -44,7 +44,6 @@ const RecipeFilters = ({ onFilter, onClear }) => {
     <div className="recipe-filters">
       <div className="filter-section">
         <h3>Filter Recipes</h3>
-        
         <div className="filter-row">
           <div className="filter-group">
             <label htmlFor="meal-type">Meal Type:</label>
@@ -54,7 +53,7 @@ const RecipeFilters = ({ onFilter, onClear }) => {
               onChange={(e) => setSelectedMealType(e.target.value)}
             >
               <option value="">All Meal Types</option>
-              {mealTypes.map((type, index) => (
+              {(Array.isArray(mealTypes) ? mealTypes : []).map((type, index) => (
                 <option key={index} value={type.value}>
                   {type.value}
                 </option>
@@ -70,7 +69,7 @@ const RecipeFilters = ({ onFilter, onClear }) => {
               onChange={(e) => setSelectedCuisine(e.target.value)}
             >
               <option value="">All Cuisines</option>
-              {cuisines.map((cuisine, index) => (
+              {(Array.isArray(cuisines) ? cuisines : []).map((cuisine, index) => (
                 <option key={index} value={cuisine.value}>
                   {cuisine.value}
                 </option>
