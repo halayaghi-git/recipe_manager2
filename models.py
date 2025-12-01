@@ -35,6 +35,7 @@ class Tag(Base):
         "Recipe", secondary=recipe_tags, back_populates="tags", lazy="joined"
     )
 
+
 class Recipe(Base):  # this Recipe class represents the recipes table in the db
     __tablename__ = "recipes"
     id = Column(Integer, primary_key=True, index=True)
